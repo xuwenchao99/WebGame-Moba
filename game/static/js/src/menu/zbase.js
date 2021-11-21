@@ -16,7 +16,7 @@ class AcGameMenu {
                         设置
                     </div>
                 </div>
-            </div>        
+            </div>
         `);
         this.root.$ac_game.append(this.$menu);
         this.$single_mode = this.$menu.find('.ac-game-menu-field-item-single-mode');
