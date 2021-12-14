@@ -30,6 +30,7 @@ class AcGamePlayground {
     }
     
     show(mode) { // 打开playground界面
+        let outer = this;
         this.$playground.show();
         this.width = this.$playground.width();
         this.height = this.$playground.height();
@@ -46,7 +47,11 @@ class AcGamePlayground {
             }            
         }
         else if(mode === "multi mode") {
-            
+            this.mps = new MultiPlayerSocket(this);
+
+            this.mps.ws.onopen = function() {
+                outer.mps.send_create_player();
+            }
         }
     }
     
