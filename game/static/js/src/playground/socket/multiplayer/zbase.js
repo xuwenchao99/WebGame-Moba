@@ -29,6 +29,9 @@ class MultiPlayerSocket {
             else if (event === "attack") {
                 outer.receive_attack(uuid, data.attackee_uuid, data.x, data.y, data.angle, data.damage, data.ball_uuid);
             }
+            else if (event === "blink") {
+                outer.receive_blink(uuid, data.tx, data.ty);
+            }
         }
     }
     send_create_player(username, photo) {
@@ -117,6 +120,21 @@ class MultiPlayerSocket {
         let attackee = this.get_player(attackee_uuid);
         if (attacker && attackee) {
             attackee.receive_attack(x, y, angle, damage, ball_uuid, attacker);
+        }
+    }
+    send_blink(tx, ty) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "blink",
+            'uuid': outer.uuid,
+            'tx': tx,
+            'ty': ty,
+        }));
+    }
+    receive_blink(uuid, tx, ty) {
+        let player = this.get_player(uuid);
+        if (player) {
+            player.blink(tx, ty);
         }
     }
 }
