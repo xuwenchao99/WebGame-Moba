@@ -111,18 +111,52 @@ let AC_GAME_ANIMATION = function(timestamp) {
 }
 
 requestAnimationFrame(AC_GAME_ANIMATION);
-class GameMap extends AcGameObject {
+class ChatField {
+    constructor(playground) {
+        this.playground = playground;
+
+        this.$history = $(`<div class="ac-game-chat-field-history"></div>`);
+        this.$input = $(`<input type="text" class="ac-game-chat-field-input">`);
+
+        this.$history.hide();
+        this.$input.hide();
+        this.playground.$playground.append(this.$history);
+        this.playground.$playground.append(this.$input);
+
+        this.start();
+    }
+    start() {
+        this.add_listening_events();
+    }
+    add_listening_events() {
+        let outer = this;
+        this.$input.keydown(function(e) {
+            if (e.which === 27) {
+                outer.hide_input();
+                return false;
+            }
+        });
+    }
+    show_input() {
+        this.$input.show();
+        this.$input.focus();
+    }
+    hide_input() {
+        this.$input.hide();
+        this.playground.game_map.$canvas.focus();
+    }
+}class GameMap extends AcGameObject {
     constructor(playground) {
         super();
         this.playground = playground;
-        this.$canvas = $(`<canvas></canvas>`);
+        this.$canvas = $(`<canvas tabindex=0></canvas>`);
         this.ctx = this.$canvas[0].getContext('2d');
         this.ctx.canvas.width = this.playground.width;
         this.ctx.canvas.height = this.playground.height;
         this.playground.$playground.append(this.$canvas);
     }
     start() {
-
+        this.$canvas.focus();
     }
 
     resize() {
@@ -251,7 +285,7 @@ class Player extends AcGameObject {
         this.playground.player_count++;
         this.playground.notice_board.write("已就绪：" + this.playground.player_count + "人");
         
-        if (this.playground.player_count >= 3) {
+        if (this.playground.player_count >= 2) {
             this.playground.state = "fighting";  // 更新状态
             this.playground.notice_board.write("Fighting");
         }
@@ -272,7 +306,7 @@ class Player extends AcGameObject {
         });
         this.playground.game_map.$canvas.mousedown(function(e) {
             if (outer.playground.state !== "fighting") {
-                return false;
+                return true;
             }
 
             const rect = outer.ctx.canvas.getBoundingClientRect();
@@ -311,7 +345,18 @@ class Player extends AcGameObject {
             }
         });
 
-        $(window).keydown(function(e) {
+        this.playground.game_map.$canvas.keydown(function(e) {
+            if (e.which === 13) {
+                if (outer.playground.mode === "multi mode") {
+                    outer.playground.chat_field.show_input();
+                    return false;
+                }
+            }
+            else if (e.which === 27) {
+                if (outer.playground.mode === "multi mode") {
+                    outer.playground.chat_field.hide_input();
+                }
+            }
             if (outer.playground.state !== "fighting") {
                 return true;
             }
@@ -813,6 +858,7 @@ class MultiPlayerSocket {
             }            
         }
         else if(mode === "multi mode") {
+            this.chat_field = new ChatField(this);
             this.mps = new MultiPlayerSocket(this);
 
             this.mps.uuid = this.players[0].uuid;

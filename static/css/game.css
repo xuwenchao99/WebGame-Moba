@@ -1,7 +1,7 @@
 .ac-game-menu {
     width: 100%;
     height: 100%;
-    background-image: url("/static/image/menu/background.gif");
+    background-image: url("/static/image/menu/background-myimage.gif");
     background-size: 100% 100%;
     user-select: none;
 }
@@ -48,7 +48,7 @@
 .ac-game-settings {
     width: 100%;
     height: 100%;
-    background-image: url("/static/image/menu/background.gif");
+    background-image: url("/static/image/menu/background-myimage.gif");
     background-size: 100% 100%;
     user-select: none;    
 }
@@ -161,4 +161,40 @@
     transform: translate(-50%, -50%);
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 5px;
+}
+
+.ac-game-chat-field-history {
+    position: absolute;
+    top: 66%;
+    left: 20%;
+
+    transform: translate(-50%, -50%);
+
+    width: 20%;
+    height: 32%;
+
+    color: white;
+    font-size: 2vh;
+
+    padding: 5px;
+    overflow: auto;
+}
+
+.ac-game-chat-field-history::-webkit-scrollbar {
+    width: 0;
+}
+
+.ac-game-chat-field-input {
+    position: absolute;
+    top: 86%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+
+    width: 20%;
+    height: 3vh;
+
+    color: white;
+    font-size: 2vh;
+
+    background-color: rgba(222,225,230, 0.2);
 }

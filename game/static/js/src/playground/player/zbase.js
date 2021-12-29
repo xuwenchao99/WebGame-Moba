@@ -43,7 +43,7 @@ class Player extends AcGameObject {
         this.playground.player_count++;
         this.playground.notice_board.write("已就绪：" + this.playground.player_count + "人");
         
-        if (this.playground.player_count >= 3) {
+        if (this.playground.player_count >= 2) {
             this.playground.state = "fighting";  // 更新状态
             this.playground.notice_board.write("Fighting");
         }
@@ -64,7 +64,7 @@ class Player extends AcGameObject {
         });
         this.playground.game_map.$canvas.mousedown(function(e) {
             if (outer.playground.state !== "fighting") {
-                return false;
+                return true;
             }
 
             const rect = outer.ctx.canvas.getBoundingClientRect();
@@ -103,7 +103,18 @@ class Player extends AcGameObject {
             }
         });
 
-        $(window).keydown(function(e) {
+        this.playground.game_map.$canvas.keydown(function(e) {
+            if (e.which === 13) {
+                if (outer.playground.mode === "multi mode") {
+                    outer.playground.chat_field.show_input();
+                    return false;
+                }
+            }
+            else if (e.which === 27) {
+                if (outer.playground.mode === "multi mode") {
+                    outer.playground.chat_field.hide_input();
+                }
+            }
             if (outer.playground.state !== "fighting") {
                 return true;
             }
