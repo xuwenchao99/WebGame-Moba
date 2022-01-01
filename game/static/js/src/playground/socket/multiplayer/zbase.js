@@ -32,6 +32,9 @@ class MultiPlayerSocket {
             else if (event === "blink") {
                 outer.receive_blink(uuid, data.tx, data.ty);
             }
+            else if (event === "message") {
+                outer.receive_message(uuid, data.username, data.text);
+            }
         }
     }
     send_create_player(username, photo) {
@@ -136,5 +139,17 @@ class MultiPlayerSocket {
         if (player) {
             player.blink(tx, ty);
         }
+    }
+    send_message(username, text) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "message",
+            'uuid': outer.uuid,
+            'username': username,
+            'text': text,
+        }));
+    }
+    receive_message(uuid, username, text) {
+        this.playground.chat_field.add_message(username, text);
     }
 }
