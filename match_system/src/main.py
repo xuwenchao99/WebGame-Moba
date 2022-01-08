@@ -15,6 +15,10 @@ from queue import Queue
 from time import sleep
 from threading import Thread
 
+from acapp.asgi import channel_layer
+from asgiref.sync import async_to_sync
+from django.core.cache import cache
+
 queue = Queue()  # 消息队列，同步
 
 class Player:
@@ -34,6 +38,8 @@ class Pool:
         self.players.append(player)
 
     def check_match(self, a, b):
+        # if a.username == b.username:
+            # return False
         dt = abs(a.score - b.score)
         a_max_dif = a.waiting_time * 50
         b_max_dif = b.waiting_time * 50
@@ -41,6 +47,29 @@ class Pool:
 
     def match_success(self, ps):
         print("Match Success：%s %s %s" % (ps[0].username, ps[1].username, ps[2].username))
+        room_name = "room-%s-%s-%s" % (ps[0].uuid, ps[1].uuid, ps[2].uuid)
+        players = []
+        for p in ps:
+            async_to_sync(channel_layer.group_add)(room_name, p.channel_name)
+            players.append({
+                'uuid': p.uuid,
+                'username': p.username,
+                'photo': p.photo,
+                'hp': 100,
+            })
+        cache.set(room_name, players, 3600)  # 有效时间1小时
+        for p in ps:
+            async_to_sync(channel_layer.group_send) (  # 实现进程间通信
+                room_name,
+                {
+                    'type': "group_send_event",
+                    'event': "create_player",
+                    'uuid': p.uuid,
+                    'username': p.username,
+                    'photo': p.photo,
+                }
+            )
+
 
     def increase_waiting_time(self):
         for player in self.players:

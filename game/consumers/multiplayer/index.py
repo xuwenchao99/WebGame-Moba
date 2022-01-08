@@ -7,6 +7,8 @@ from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
+from channels.db import database_sync_to_async
+from game.models.player.player import Player
 
 from match_system.src.match_server.match_service import Match
 
@@ -34,10 +36,15 @@ class MultiPlayer(AsyncWebsocketConsumer):
         # Create a client to use the protocol encoder
         client = Match.Client(protocol)
 
+        def db_get_player():
+            return Player.objects.get(user__username=data['username'])
+
+        player = await database_sync_to_async(db_get_player)()
+
         # Connect!
         transport.open()
 
-        client.add_player(1500, data['uuid'], data['username'], data['photo'], self.channel_name)
+        client.add_player(player.score, data['uuid'], data['username'], data['photo'], self.channel_name)
 
         # Close!
         transport.close()
@@ -45,6 +52,10 @@ class MultiPlayer(AsyncWebsocketConsumer):
 
 
     async def group_send_event(self, data):
+        if not self.room_name:
+            keys = cache.keys('*%s*' % (self.uuid))
+            if keys:
+                self.room_name = keys[0]
         await self.send(text_data=json.dumps(data))
 
     async def move_to(self, data):
@@ -52,7 +63,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
             self.room_name,
             {
                 'type': "group_send_event",
-                "event": "move_to",
+                'event': "move_to",
                 'uuid': data['uuid'],
                 'tx': data['tx'],
                 'ty': data['ty'],
